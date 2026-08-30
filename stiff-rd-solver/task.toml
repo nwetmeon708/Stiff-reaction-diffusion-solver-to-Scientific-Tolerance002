@@ -1,1 +1,31 @@
 
+artifacts = ["/app/profile.csv"]
+
+[task]
+name = "Stiff-Scientific-Reaction-Solver/stiff-rd-solver"
+
+[metadata]
+author_name = "GEORGE NEWTON "
+author_email = "mwangigeorgepip064@gmail.com"
+difficulty_explanation = "The system is stiff: the exchange rate k=150 forces an explicit time stepper to dt < ~1/300 while diffusion on a fine grid tightens it further, so naive FTCS either blows up or crawls. The agent must recognize stiffness, choose a stable discretization (implicit Crank-Nicolson, exponential integrator, or spectral diagonalization), reason about the fast-decaying exchange mode versus the slow diffusion mode, and verify convergence against the discontinuous initial data. This is iterative numerical-analysis work an expert does over hours: derive, implement, diagnose instability, refine resolution. The coupled two-species exchange is diagonalizable only after sum/difference change of variables, which most agents do not see immediately."
+solution_explanation = "Write w=u+v and z=u-v. Then w_t = D w_xx and z_t = D z_xx - 2k z, both linear heat-type equations with Dirichlet BCs, solved exactly by sine-series expansion of the step initial data: each mode m decays as exp(-(D (m pi)^2) t) for w and exp(-(D (m pi)^2 + 2k) t) for z. Truncating at M=2000 modes gives machine-precision ground truth at T. Equivalently, a Crank-Nicolson finite-difference scheme on the coupled system with a fine grid meets the tolerance. The reference solution evaluates the spectral series and writes the profile CSV."
+verification_explanation = "The sealed verifier independently evaluates the exact sine-series solution at T on the required 501-point grid and asserts the submitted profile matches it within 1e-4 absolute error per field, plus exact grid and format checks. Ground truth is computed inside the verifier image from baked-in math (no agent-visible data), so hard-coding is impossible without doing the work. test.sh always writes /logs/verifier/reward.txt (1 on pytest success, 0 otherwise, including crashes) and emits a CTRF report."
+category = "Science"
+subcategory = "Math"
+tags = ["numerical-analysis", "pde", "stiff-systems", "scientific-computing", "python"]
+expert_time_estimate_hours = 5
+relevant_experience = "Mathematics and Computer Science graduate with coursework and projects in numerical analysis, differential equations, and scientific computing in Python."
+
+[verifier]
+timeout_sec = 600.0
+environment_mode = "separate"
+
+[agent]
+timeout_sec = 14400
+
+[environment]
+build_timeout_sec = 600.0
+cpus = 2
+memory_mb = 4096
+storage_mb = 10240
+gpus = 0
